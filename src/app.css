@@ -6,12 +6,18 @@
     html {
     font-family: 'Secular One', sans-serif;   
     }
+
+    a:hover {
+    color: black;
+    }
+
+    body {
+     margin: 0;
+     padding: 0;
+     height: 100vh;
+     display: flex;
+    }
+    
 }
 
 
-body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    display: flex;
-}
