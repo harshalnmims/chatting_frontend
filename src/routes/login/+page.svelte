@@ -1,26 +1,51 @@
 <script lang="ts">
   import { fetchApi } from "$lib/utils/fetchApi";
-  import { numberValidator } from "$lib/validations/validator";
+  import { numberValidator,phoneValidator } from "$lib/validations/validator";
+  import Alert from '$lib/components/Alert.svelte'
 
-  let userId: string;
-  let otp: number;
+  let userId: number;
+  let userOtp: number;
+  let otpField :boolean = false;     
 
-  async function handleClick() {
-    let obj: { username: string; otp: number } = {
+  async function handleClick() : Promise<void> {
+   
+    let val : boolean = phoneValidator(userId);
+   
+    if(val){
+    otpField = true;
+    }
+
+  }
+
+  async function handleOtpClick() : Promise<void> {
+  
+    console.log('otp function called ')
+     let numval:boolean = false;
+
+     let phoneVal : boolean = phoneValidator(userId);
+
+     console.log('otp format ',userOtp)
+     numval = numberValidator(userOtp);
+
+     console.log('otp validator ',numval)
+
+     let obj: { username: number; otp: number } = {
       username: userId,
-      otp: otp,
+      otp: userOtp,
     };
 
-    numberValidator(otp);
+    if(numval && phoneVal){
+     let response = await fetchApi("/login", obj);
+     console.log("response ", response);
+    }
 
-    let response = await fetchApi("/login", obj);
-    console.log("response ", response);
   }
 </script>
 
+<Alert />
 <div class="container flex flex-row ... mt-10">
   <div class="col-sm">
-    <img class="mt-20 ..." width="90%" src="/images/login.jpg" />
+    <img class="mt-20 ..." width="90%" src="/images/login.jpg" alt="Not Found" />
   </div>
 
   <div class="col-sm mt-14">
@@ -34,31 +59,40 @@
     <div>
       <div class="form-group ml-20 mt-20">
         <input
-          type="text"
+          type="number"
           class="form-control shadow-none ... p-3 font-bold border-2 border-black"
-          id="exampleInputEmail1"
-          aria-describedby="emailHelp"
-          placeholder="Email-Id"
+          id="exampleInputphone1"
+          aria-describedby="phoneHelp"
+          placeholder="Phone No."
           bind:value={userId}
         />
       </div>
       <br />
       <div class="form-group ml-20">
+        <!-- svelte-ignore missing-declaration -->
         <input
-          type="text"
-          class="form-control shadow-none ... p-3 font-bold border-2 border-black"
+          type="number"
+          class= {otpField ? "form-control shadow-none ... p-3 font-bold border-2 border-black" : "form-control shadow-none ... p-3 font-bold border-2 border-black d-none" } 
           id="exampleInputPassword1"
           placeholder="Otp"
-          bind:value={otp}
+          bind:value={userOtp}
         />
       </div>
       <div class="d-flex">
+        {#if !otpField}
         <button
-          type="button"
-          class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
-          on:click={handleClick}>Login</button
-        >
-        <a href="#" class="mt-24 ml-20 font-semibold">Forgot Password ?</a>
+        type="button"
+        class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+        on:click = {handleClick}>Login</button
+        >` 
+        {:else}
+        <button
+        type="button"
+        class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+         on:click = {handleOtpClick} >Login</button
+        >`
+        {/if}
+        <a href="/forgot" class="mt-24 ml-20 font-semibold">Forgot Password ?</a>
       </div>
     </div>
   </div>
