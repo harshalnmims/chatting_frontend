@@ -1,51 +1,68 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { fetchApi } from "$lib/utils/fetchApi";
-  import { numberValidator,phoneValidator } from "$lib/validations/validator";
-  import Alert from '$lib/components/Alert.svelte'
+  import { numberValidator, phoneValidator } from "$lib/validations/validator";
+  import { checkStatusCode } from "$lib/validations/status";
+  import Alert from "$lib/components/Alert.svelte";
 
   let userId: number;
   let userOtp: number;
-  let otpField :boolean = false;     
+  let otpField: boolean = false;
 
-  async function handleClick() : Promise<void> {
-   
-    let val : boolean = phoneValidator(userId);
-   
-    if(val){
-    otpField = true;
+  async function handleClick(): Promise<void> {
+    let val: boolean = phoneValidator(userId);
+
+    if (val) {
+      let obj: { phone: number } = {
+        phone: userId,
+      };
+
+      let { json } = await fetchApi("/validateNumber", obj);
+      let statusCode: boolean | null | undefined = checkStatusCode(json);
+
+      if (statusCode == true) {
+        otpField = true;
+      } else {
+        goto("/error");
+      }
     }
-
   }
 
-  async function handleOtpClick() : Promise<void> {
-  
-    console.log('otp function called ')
-     let numval:boolean = false;
+  async function handleOtpClick(): Promise<void> {
+    let numval: boolean = false;
 
-     let phoneVal : boolean = phoneValidator(userId);
+    let phoneVal: boolean = phoneValidator(userId);
+    numval = numberValidator(userOtp);
 
-     console.log('otp format ',userOtp)
-     numval = numberValidator(userOtp);
-
-     console.log('otp validator ',numval)
-
-     let obj: { username: number; otp: number } = {
+    let obj: { username: number; otp: number } = {
       username: userId,
       otp: userOtp,
     };
 
-    if(numval && phoneVal){
-     let response = await fetchApi("/login", obj);
-     console.log("response ", response);
-    }
+    if (numval && phoneVal) {
+      let { json } = await fetchApi("/login", obj);
+      console.log("response ", json);
 
+      let statusCode: boolean | null | undefined = checkStatusCode(json);
+
+      if (statusCode == true) {
+        console.log("logged In");
+      } else {
+        goto("/error");
+      }
+    }
   }
 </script>
 
 <Alert />
 <div class="container flex flex-row ... mt-10">
   <div class="col-sm">
-    <img class="mt-20 ..." width="90%" src="/images/login.jpg" alt="Not Found" />
+    <img
+      class="mt-20 ..."
+      width="90%"
+      src="/images/login.jpg"
+      alt="Not Found"
+    />
   </div>
 
   <div class="col-sm mt-14">
@@ -72,7 +89,9 @@
         <!-- svelte-ignore missing-declaration -->
         <input
           type="number"
-          class= {otpField ? "form-control shadow-none ... p-3 font-bold border-2 border-black" : "form-control shadow-none ... p-3 font-bold border-2 border-black d-none" } 
+          class={otpField
+            ? "form-control shadow-none ... p-3 font-bold border-2 border-black"
+            : "form-control shadow-none ... p-3 font-bold border-2 border-black d-none"}
           id="exampleInputPassword1"
           placeholder="Otp"
           bind:value={userOtp}
@@ -80,19 +99,20 @@
       </div>
       <div class="d-flex">
         {#if !otpField}
-        <button
-        type="button"
-        class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
-        on:click = {handleClick}>Login</button
-        >` 
+          <button
+            type="button"
+            class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+            on:click={handleClick}>Login</button
+          >`
         {:else}
-        <button
-        type="button"
-        class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
-         on:click = {handleOtpClick} >Login</button
-        >`
+          <button
+            type="button"
+            class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+            on:click={handleOtpClick}>Login</button
+          >`
         {/if}
-        <a href="/forgot" class="mt-24 ml-20 font-semibold">Forgot Password ?</a>
+        <a href="/forgot" class="mt-24 ml-20 font-semibold">Forgot Password ?</a
+        >
       </div>
     </div>
   </div>

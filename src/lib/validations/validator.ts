@@ -43,8 +43,7 @@ export const phoneValidator = (data : number ) : boolean  => {
        let checkLength  = z.string().refine(value => value.length == 10 );
        checkLength.parse(String(data));
        
-       message.set(null)
-       
+       message.set(null)    
        return true;
 
       }catch(error){
