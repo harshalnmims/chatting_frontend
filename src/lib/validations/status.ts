@@ -1,5 +1,5 @@
 import { message } from "$lib/stores/validation";
-import { redirect } from "@sveltejs/kit";
+import { goto } from "$app/navigation";
 
 export function checkStatusCode(json : object) : boolean | null | undefined{
 
@@ -10,7 +10,7 @@ export function checkStatusCode(json : object) : boolean | null | undefined{
     }
 
     if(statusCode == 500){  
-      return false;  
+      goto('/error');
     }
 
     if(statusCode == 400){
