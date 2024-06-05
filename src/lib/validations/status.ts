@@ -13,7 +13,7 @@ export function checkStatusCode(json : object) : boolean | null | undefined{
       return false;  
     }
 
-    if(statusCode == 304){
+    if(statusCode == 400){
       message.set(json.message);  
       return null;
     }
