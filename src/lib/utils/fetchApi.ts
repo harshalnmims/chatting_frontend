@@ -20,12 +20,12 @@ export const fetchApi = async <T>(url : string , obj : object) : Promise<ApiResp
     if(response.ok){
      json = await response.json();
     }else{
-    goto('/error')     
+    goto("/error");
     }
 
     if(json != undefined){
-    return { json  , error : null};
+    return { json };
     }else{
-    return {json : null , error : 'Invalid'}
+    return {json :{status:400,message:'Failed To Send Data !'}}
     }
 }

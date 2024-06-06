@@ -3,8 +3,9 @@
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
   import { checkStatusCode } from "$lib/validations/status";
-  import Alert from "$lib/components/Alert.svelte";
+  import { encryptData } from "$lib/validations/auth";
 
+  import Alert from "$lib/components/Alert.svelte";  
   let userId: number;
   let userOtp: number;
   let otpField: boolean = false;
@@ -22,9 +23,7 @@
 
       if (statusCode == true) {
         otpField = true;
-      } else {
-        goto("/error");
-      }
+      } 
     }
   }
 
@@ -44,11 +43,10 @@
       console.log("response ", json);
 
       let statusCode: boolean | null | undefined = checkStatusCode(json);
+      console.log('status Code ',statusCode)
 
       if (statusCode == true) {
-        console.log("logged In");
-      } else {
-        goto("/error");
+        encryptData(userId)
       }
     }
   }
