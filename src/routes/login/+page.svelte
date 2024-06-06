@@ -3,9 +3,9 @@
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
   import { checkStatusCode } from "$lib/validations/status";
-  import { encryptData } from "$lib/validations/auth";
+  import { PUBLIC_USER_COOKIE } from "$env/static/public";
 
-  import Alert from "$lib/components/Alert.svelte";  
+  import Alert from "$lib/components/Alert.svelte";
   let userId: number;
   let userOtp: number;
   let otpField: boolean = false;
@@ -23,7 +23,7 @@
 
       if (statusCode == true) {
         otpField = true;
-      } 
+      }
     }
   }
 
@@ -43,10 +43,17 @@
       console.log("response ", json);
 
       let statusCode: boolean | null | undefined = checkStatusCode(json);
-      console.log('status Code ',statusCode)
+      console.log("status Code ", statusCode);
 
       if (statusCode == true) {
-        encryptData(userId)
+        let userToken = PUBLIC_USER_COOKIE;
+
+        const date: Date = new Date();
+        date.setTime(date.getTime() + 1 * 24 * 60 * 60 * 1000);
+        const expires: string = `expires=${date.toUTCString()}`;
+
+        document.cookie = `token=${userToken}; expires=${expires}; path=/`;
+        goto("/dashboard");
       }
     }
   }
