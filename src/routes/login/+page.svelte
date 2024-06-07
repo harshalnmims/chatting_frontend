@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { username } from '$lib/stores/auth.ts';
   import { goto } from "$app/navigation";
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
@@ -53,6 +54,9 @@
         const expires: string = `expires=${date.toUTCString()}`;
 
         document.cookie = `token=${userToken}; expires=${expires}; path=/`;
+        console.log('logged In dashbord')
+
+        username.set(String(userId));
         goto("/dashboard");
       }
     }
