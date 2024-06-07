@@ -11,9 +11,6 @@ export const fetchApi = async <T>(url : string , obj : object) : Promise<ApiResp
         body : JSON.stringify(obj)
     }
 
-    let requesturl : string = PUBLIC_BACKEND_URL
-    console.log('request url ',requesturl);
-
     let response = await fetch(`${PUBLIC_BACKEND_URL}${url}`,urlHeader)
 
     let json;
@@ -29,3 +26,31 @@ export const fetchApi = async <T>(url : string , obj : object) : Promise<ApiResp
     return {json :{status:400,message:'Failed To Send Data !'}}
     }
 }
+
+
+export const verifyCookie = async <T>(url : string,token : string) : Promise<ApiResponse<T>> => {
+   
+  let urlHeader : RequestInit = {
+        method : 'GET',
+        headers : {
+            'Accept':'application/json',
+            'userToken':token
+        }
+    }
+
+    let response = await fetch(`${PUBLIC_BACKEND_URL}${url}`,urlHeader)
+
+    let json;
+
+    if(response.ok){
+     json = await response.json();
+    }else{
+    goto("/error");
+    }
+
+    if(json != undefined){
+    return { json };
+    }else{
+    return {json :{status:400,message:'Failed To Send Data !'}}
+    }
+ }

@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { username } from '$lib/stores/auth.ts';
   import { goto } from "$app/navigation";
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
   import { checkStatusCode } from "$lib/validations/status";
-  import { PUBLIC_USER_COOKIE } from "$env/static/public";
+  import { redis } from "$lib/redis/redis";
 
   import Alert from "$lib/components/Alert.svelte";
   let userId: number;
@@ -47,16 +46,13 @@
       console.log("status Code ", statusCode);
 
       if (statusCode == true) {
-        let userToken = PUBLIC_USER_COOKIE;
+        let userToken: string = await redis.get(userId);
 
-        const date: Date = new Date();
-        date.setTime(date.getTime() + 1 * 24 * 60 * 60 * 1000);
-        const expires: string = `expires=${date.toUTCString()}`;
+        const date = new Date();
+        date.setDate(date.getDate() + 1);
+        const expires = date.toUTCString();
 
-        document.cookie = `token=${userToken}; expires=${expires}; path=/`;
-        console.log('logged In dashbord')
-
-        username.set(String(userId));
+        document.cookie = `username=${userToken}; expires=${expires}; path=/`;
         goto("/dashboard");
       }
     }
