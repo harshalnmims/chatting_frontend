@@ -1,12 +1,21 @@
 import type { PageServerLoad } from "./$types"
-import { verifyCookie } from "$lib/utils/fetchApi";
+import { redirect } from "@sveltejs/kit";
+import { authenticate } from "$lib/middleware/auth";
 
 export const load : PageServerLoad = async ({cookies}) : Promise<object> => {
 
-    let userToken : string = await cookies.get('token'); 
-    let response : Promise<object> =  await verifyCookie('/verifyCookie',userToken);
+    let userToken : any =  cookies?.get('userToken'); 
 
-   return {
-    json : 'Hello'
-   }
+    if(userToken == undefined){
+     redirect (302,'/login');
+    }
+
+    let response = await authenticate(String(userToken));
+    let json : object = response.json;
+
+    return {
+        json
+     }
+
+   
 }

@@ -17,4 +17,10 @@ export function checkStatusCode(json : object) : boolean | null | undefined{
       message.set(json.message);  
       return null;
     }
+
+    if(statusCode == 401){
+      goto('/login');
+    }
+
+
 }

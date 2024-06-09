@@ -1,14 +1,15 @@
 <script lang="ts">
-  import { goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
   import { checkStatusCode } from "$lib/validations/status";
-  import { redis } from "$lib/redis/redis";
-
   import Alert from "$lib/components/Alert.svelte";
+
+
   let userId: number;
   let userOtp: number;
   let otpField: boolean = false;
+
 
   async function handleClick(): Promise<void> {
     let val: boolean = phoneValidator(userId);
@@ -28,7 +29,10 @@
   }
 
   async function handleOtpClick(): Promise<void> {
-    let numval: boolean = false;
+
+    try {
+
+      let numval: boolean = false;
 
     let phoneVal: boolean = phoneValidator(userId);
     numval = numberValidator(userOtp);
@@ -46,17 +50,58 @@
       console.log("status Code ", statusCode);
 
       if (statusCode == true) {
-        let userToken: string = await redis.get(userId);
 
-        const date = new Date();
-        date.setDate(date.getDate() + 1);
-        const expires = date.toUTCString();
+        let userToken :string = json.token
 
-        document.cookie = `username=${userToken}; expires=${expires}; path=/`;
+        let credentails  = {
+          method:'POST',
+          headers : {
+            'Content-Type': 'application/json',
+          },
+          body : JSON.stringify({userToken})
+        }
+
+        let response = await fetch('/userCookie',credentails)
+        console.log('response ',response)
+      
         goto("/dashboard");
       }
     }
+
+    }catch(error){
+      console.log(error);
+    }
+    // let numval: boolean = false;
+
+    // let phoneVal: boolean = phoneValidator(userId);
+    // numval = numberValidator(userOtp);
+
+    // let obj: { username: number; otp: number } = {
+    //   username: userId,
+    //   otp: userOtp,
+    // };
+
+    // if (numval && phoneVal) {
+    //   let { json } = await fetchApi("/login", obj);
+    //   console.log("response ", json);
+
+    //   let statusCode: boolean | null | undefined = checkStatusCode(json);
+    //   console.log("status Code ", statusCode);
+
+    //   if (statusCode == true) {
+
+    //     let userToken :string = json.token
+        
+    //     const date = new Date();
+    //     date.setDate(date.getDate() + 1);
+    //     const expires = date.toUTCString();
+
+    //     document.cookie = `userToken=${userToken}; expires=${expires}; path=/`;
+    //     goto("/dashboard");
+    //   }
+    // }
   }
+
 </script>
 
 <Alert />
