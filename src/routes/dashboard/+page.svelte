@@ -1,42 +1,39 @@
 <script lang="ts">
-	  import { fetchApi } from '$lib/utils/fetchApi';
-	  import { user } from '$lib/stores/validation.js'
-	  import { checkStatusCode } from '$lib/validations/status';
-    import { ioClient } from "$lib/socket/socket.js";
-    import { onMount } from 'svelte';
+  import { fetchApi } from "$lib/utils/fetchApi";
+  import { ioClient } from "$lib/socket/socket.js";
+  import { onMount } from "svelte";
+  import { user } from "$lib/stores/validation.js";
 
-    let userId : string;
-    let chatList : object[]
-    export let data;
+  //   let chatList: object[];
+  //   let response: any;
+  //   export let data;
 
-    let response = checkStatusCode(data.json);
-    if(response == true){
-    
-    userId =  data.json.message.username;
-    user.set(userId);
-    ioClient.emit('join',{userId});
+  //   let userId = undefined;
+  //   let status: boolean = data.status;
 
-    if(data.json.message.username != undefined){
-    let {json} = Promise.all([fetchApi('/getUserChats',{userId:data.json.message.username})])
-    console.log('chat json ',JSON.stringify(json))
-    }
-    
-   
+  //   if (status == true) {
+  //     onMount(async () => {
+  //       userId = $user;
 
-    }
- 
-  function sendMessage(){
-        console.log('socket called');
-        ioClient.emit('message', 'Hello from Svelte!');
-        ioClient.on('user-message',(message) => {
-          console.log('Received message from svelte:', message);
-        })
-  }
+  //       ioClient.emit("join", { userId });
 
-  sendMessage();
+  //       console.log("username data", userId);
+  //       response = await fetchApi("/getUserChats", { userId: userId });
+  //       console.log("chat json ", JSON.stringify(response));
+  //     });
+  //   }
 
-    
+  //   function sendMessage() {
+  //     console.log("socket called");
+  //     ioClient.emit("message", "Hello from Svelte!");
+  //     ioClient.on("user-message", (message) => {
+  //       console.log("Received message from svelte:", message);
+  //     });
+  //   }
+
+  //   sendMessage();
 </script>
+
 <h1>This is dashboard</h1>
 
 <!-- {#if chatList.length > 0}
