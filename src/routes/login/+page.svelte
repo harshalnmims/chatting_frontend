@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { user } from "$lib/stores/validation";
   import { goto } from "$app/navigation";
   import { fetchApi } from "$lib/utils/fetchApi";
   import { numberValidator, phoneValidator } from "$lib/validations/validator";
@@ -47,8 +46,6 @@
         console.log("status Code ", statusCode);
 
         if (statusCode == true) {
-          let userToken: string = json.token;
-          user.set(String(userId));
 
           let credentails = {
             method: "POST",

@@ -1,12 +1,12 @@
 import type { PageServerLoad } from "./$types"
 import { redirect } from "@sveltejs/kit";
-import { fetchApi } from "$lib/utils/fetchApi";
+import { sendData } from "../sendData/+server";
 
 export const load : PageServerLoad = async ({fetch}) : Promise<object> => {
 
     try {
 
-    let credentials = {
+    let credentials : RequestInit = {
         method :'GET',
         headers :{
             'Accept':'application/json'
@@ -20,10 +20,11 @@ export const load : PageServerLoad = async ({fetch}) : Promise<object> => {
     }
 
     let data = await response.json();
-    let username = data.username;
+    let username : string = data.message.username;
 
-    let chatList = await fetch('/')
-    return {username}
+    let chatList = await sendData('/getUserChats',{username});
+    let chatData : any = chatList.json; 
+    return {username ,chatData}
 
         
     } catch (error) {

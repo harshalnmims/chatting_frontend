@@ -2,26 +2,26 @@
   import { fetchApi } from "$lib/utils/fetchApi";
   import { ioClient } from "$lib/socket/socket.js";
   import { onMount } from "svelte";
-  import { user } from "$lib/stores/validation.js";
+  import { io } from "socket.io-client";
 
-  //   let chatList: object[];
-  //   let response: any;
-  //   export let data;
+  let chatUserList: object[];
+  let chatMessages: object[] = [{}];
+  let buttonFlag: string = "d-none";
+  let inputMessage: string;
+  let contactLid: number;
 
-  //   let userId = undefined;
-  //   let status: boolean = data.status;
+  $: messages = chatMessages;
+  $: val = buttonFlag;
+  $: contact = contactLid;
 
-  //   if (status == true) {
-  //     onMount(async () => {
-  //       userId = $user;
+  export let data;
+  let userId: string = data.username;
+  chatUserList = data.chatData.message;
 
-  //       ioClient.emit("join", { userId });
+  $: chatList = chatUserList;
 
-  //       console.log("username data", userId);
-  //       response = await fetchApi("/getUserChats", { userId: userId });
-  //       console.log("chat json ", JSON.stringify(response));
-  //     });
-  //   }
+  console.log("username ", userId, JSON.stringify(chatList));
+  ioClient.emit("join", { userId });
 
   //   function sendMessage() {
   //     console.log("socket called");
@@ -32,14 +32,59 @@
   //   }
 
   //   sendMessage();
+
+  function selectUser(contactId: number) {
+    console.log(contactId);
+    contactLid = contactId;
+
+    ioClient.emit("fetchMessage", {
+      userContactId: userId,
+      contact: contactId,
+    });
+
+    ioClient.on("userList", ({ messages }) => {
+      console.log("User List", JSON.stringify(messages));
+      chatMessages = messages;
+    });
+
+    buttonFlag = "show";
+  }
+
+  function sendMessage() {
+    console.log("send message called ", inputMessage, contact);
+    ioClient.emit("private message", { inputMessage, contact, userId });
+    ioClient.on("updatedChats", ({ updateChat }) => {
+      console.log("user messages ", updateChat);
+      chatMessages = updateChat;
+    });
+  }
 </script>
 
-<h1>This is dashboard</h1>
+<style>
+ :global(body){
+   background-color: #F1F2F3; 
+ }
+</style>
 
-<!-- {#if chatList.length > 0}
-{#each chatList as ch}
-<h1>ch.firstname</h1>
-{/each}
+{#if chatList.length > 0}
+  {#each chatList as ch}
+    <button on:click={() => selectUser(ch.id)}>{ch.firstname}</button><br />
+  {/each}
 {:else}
-<h1>No Data Found !</h1>
-{/if} -->
+  <h1>No Data Found Chats!</h1>
+{/if}
+
+<h1>User Messages</h1>
+
+{#if messages.length > 0}
+  {#each messages as ms}
+    <h1>{ms.message}</h1>
+  {/each}
+{:else}
+  <h1>No Data Found Messages !</h1>
+{/if}
+
+<input type="text" class={val} bind:value={inputMessage} />
+<button class={val} on:click={sendMessage}>Send</button>
+
+
