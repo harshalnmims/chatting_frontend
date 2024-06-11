@@ -1,11 +1,12 @@
-<script lang="ts">
+
+ <script lang="ts">
   import { fetchApi } from "$lib/utils/fetchApi";
   import { ioClient } from "$lib/socket/socket.js";
   import { onMount } from "svelte";
   import { io } from "socket.io-client";
 
   let chatUserList: object[];
-  let chatMessages: object[] = [{}];
+  let chatMessages: object[] = [];
   let buttonFlag: string = "d-none";
   let inputMessage: string;
   let contactLid: number;
@@ -21,17 +22,24 @@
   $: chatList = chatUserList;
 
   console.log("username ", userId, JSON.stringify(chatList));
+
   ioClient.emit("join", { userId });
 
-  //   function sendMessage() {
-  //     console.log("socket called");
-  //     ioClient.emit("message", "Hello from Svelte!");
-  //     ioClient.on("user-message", (message) => {
-  //       console.log("Received message from svelte:", message);
-  //     });
-  //   }
+  // Setup listeners only once
+  ioClient.on("userList", ({ messages }) => {
+    console.log("User List", JSON.stringify(messages));
+    chatMessages = messages;
+  });
 
-  //   sendMessage();
+  ioClient.on("updatedChats", ({ updateChat }) => {
+    console.log("user messages ", updateChat);
+    chatMessages = updateChat
+  });
+
+  ioClient.on("private message", ({ senderPhoneNumber, inputMessage }) => {
+    console.log("user messages ", senderPhoneNumber, inputMessage);
+    chatMessages = chatMessages.concat({message:inputMessage})
+  });
 
   function selectUser(contactId: number) {
     console.log(contactId);
@@ -42,27 +50,20 @@
       contact: contactId,
     });
 
-    ioClient.on("userList", ({ messages }) => {
-      console.log("User List", JSON.stringify(messages));
-      chatMessages = messages;
-    });
-
     buttonFlag = "show";
   }
 
   function sendMessage() {
     console.log("send message called ", inputMessage, contact);
     ioClient.emit("private message", { inputMessage, contact, userId });
-    ioClient.on("updatedChats", ({ updateChat }) => {
-      console.log("user messages ", updateChat);
-      chatMessages = updateChat;
-    });
+    inputMessage = ""; // Clear the input after sending the message
+
   }
 </script>
 
 <style>
  :global(body){
-   background-color: #F1F2F3; 
+   background-color: #F7F8FA; 
  }
 </style>
 
@@ -81,10 +82,8 @@
     <h1>{ms.message}</h1>
   {/each}
 {:else}
-  <h1>No Data Found Messages !</h1>
+  <h1>No Data Found Messages!</h1>
 {/if}
 
 <input type="text" class={val} bind:value={inputMessage} />
 <button class={val} on:click={sendMessage}>Send</button>
-
-
