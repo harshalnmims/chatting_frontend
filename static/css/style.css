@@ -11,6 +11,7 @@ a:hover{
 li{
   padding-left: 20px;  
 }
-
-
-
+.custom-left{
+   float: right;
+   margin-right:20px;
+}
