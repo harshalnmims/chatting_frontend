@@ -67,30 +67,36 @@
   }
 </script>
 
+<style>
+  .form-control {
+    border: 2px solid #6A0DAD; 
+  }
+</style>
+
 <Alert />
 <div class="container flex flex-row ... mt-10">
   <div class="col-sm">
     <img
-      class="mt-20 ..."
-      width="90%"
-      src="/images/login.jpg"
+      class="mt-18 ..."
+      width="100%"
+      src="/images/loginNew.svg"
       alt="Not Found"
     />
   </div>
 
   <div class="col-sm mt-14">
     <div>
-      <p class="font-['Secular_One','Open_Sans'] text-[40px] mt-24 ml-24">
+      <p class="text-[#6A0DAD] font-['Secular_One','Open_Sans'] text-[40px] mt-24 ml-24">
         Welcome Back !
       </p>
-      <p class="ml-24 mt-2 font-semibold ...">Login To Continue</p>
+      <p class="text-[#6A0DAD] ml-24 mt-2 font-semibold ...">Login To Continue</p>
     </div>
 
     <div>
       <div class="form-group ml-20 mt-20">
         <input
           type="number"
-          class="form-control shadow-none ... p-3 font-bold border-2 border-black"
+          class="form-control shadow-none ... p-3 font-bold border-2 border-[#6A0DAD]"
           id="exampleInputphone1"
           aria-describedby="phoneHelp"
           placeholder="Phone No."
@@ -103,8 +109,8 @@
         <input
           type="number"
           class={otpField
-            ? "form-control shadow-none ... p-3 font-bold border-2 border-black"
-            : "form-control shadow-none ... p-3 font-bold border-2 border-black d-none"}
+            ? "form-control shadow-none ... p-3 font-bold border-2 border-[#6A0DAD]"
+            : "form-control shadow-none ... p-3 font-bold border-2 border-[#6A0DAD] d-none"}
           id="exampleInputPassword1"
           placeholder="Otp"
           bind:value={userOtp}
@@ -114,17 +120,17 @@
         {#if !otpField}
           <button
             type="button"
-            class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+            class="bg-[#A259FF] text-white mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
             on:click={handleClick}>Login</button
           >`
         {:else}
           <button
             type="button"
-            class="btn btn-primary mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
+            class="bg-[#A259FF] text-white mt-20 ml-20 rounded-[30px] p-2 w-40 h-12 font-['Secular_One','Open_Sans']"
             on:click={handleOtpClick}>Login</button
           >`
         {/if}
-        <a href="/forgot" class="mt-24 ml-20 font-semibold">Forgot Password ?</a
+        <a href="/forgot" class="text-[#6A0DAD] mt-24 ml-20 font-semibold">Forgot Password ?</a
         >
       </div>
     </div>
