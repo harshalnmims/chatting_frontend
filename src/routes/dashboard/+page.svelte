@@ -11,25 +11,41 @@
   let buttonFlag: string = "d-none";
   let inputMessage: string;
   let contactLid: number;
+  let count: number = 0;
+  let isOpen: string = "show";
+  let openFlag: boolean = false;
+  let newMessage: string;
 
   $: messages = chatMessages;
   $: val = buttonFlag;
   $: contact = contactLid;
+  $: chatCount = count;
+  $: openUser = isOpen;
+  $: openVal = openFlag;
+  $: latestMessage = newMessage;
 
   export let data;
-  let userId: string = data.username;
-  chatUserList = data.chatData.message;
+  console.log("user >>>>>>>>>>> ", JSON.stringify(data.chatData));
+  let userId: string = data?.username;
 
   $: chatList = chatUserList;
 
   console.log("username ", userId, JSON.stringify(chatList));
 
   ioClient.emit("join", { userId });
+  ioClient.emit("getUserChats", { username: userId });
+
+  ioClient.on("userChatList", ({ chatData }) => {
+    console.log("user chats >>>>>>>>>>>>>> ", JSON.stringify(chatData));
+    chatUserList = chatData;
+  });
 
   // Setup listeners only once
   ioClient.on("userList", ({ messages }) => {
     console.log("User List", JSON.stringify(messages));
     chatMessages = messages;
+    isOpen = "d-none";
+    openFlag = true;
   });
 
   ioClient.on("updatedChats", ({ updateChat }) => {
@@ -40,6 +56,7 @@
   ioClient.on("private message", ({ senderPhoneNumber, inputMessage }) => {
     console.log("user messages ", senderPhoneNumber, inputMessage);
     chatMessages = chatMessages.concat({ message: inputMessage });
+    count = inputMessage.length;
   });
 
   function selectUser(contactId: number) {
@@ -52,12 +69,14 @@
     });
 
     buttonFlag = "show";
+    openFlag = true;
   }
 
   function sendMessage() {
     console.log("send message called ", inputMessage, contact);
     ioClient.emit("private message", { inputMessage, contact, userId });
     inputMessage = "";
+    newMessage = inputMessage;
   }
 </script>
 
@@ -75,7 +94,7 @@
     <div
       class="flex flex-col flex-wrap mt-4 w-[28%] ml-[60px] px-4 bg-white rounded-[20px] overflow-auto"
     >
-      {#if chatList.length > 0}
+      {#if chatList?.length > 0}
         {#each chatList as ch}
           <div class="flex flex-row items-center mb-4">
             <img
@@ -84,9 +103,19 @@
               alt="Image Not Found"
               class="mr-2 rounded-[20px] py-3"
             />
-            <button class="w-full text-left" on:click={() => selectUser(ch.id)}>
-              {ch.firstname}
+            <button
+              class="w-full text-left mb-4 mt-3 flex flex-col"
+              on:click={() => selectUser(ch.id)}
+            >
+              <p>{ch.firstname}</p>
+              <p class="font-semibold ... mt-2">{newMessage}</p>
             </button>
+            <p
+              class="float-right bg-[#A259FF] text-white p-1.5 flex items-center justify-center {openUser}"
+              style="width: 30px; height: 30px; border-radius: 50%;"
+            >
+              {chatCount}
+            </p>
           </div>
           <hr class="w-full my-2 border-t border-gray-300" />
         {/each}
@@ -98,40 +127,51 @@
     <div
       class="flex flex-col mt-4 w-[80%] mr-4 ml-8 bg-white rounded-[20px] overflow-hidden relative"
     >
-    <div class="flex-1 overflow-auto p-4">
-
-      {#if messages.length > 0}
-        {#each messages as ms}
-          <div class="flex flex-col justify-center mb-4 p-4">
-            {#if ms.created_by == userId}
-              <p
-                class="self-end w-[200px] p-3.5 bg-[#A259FF] text-white rounded-lg"
-              >
-                {ms.message}
-              </p>
-            {:else}
-              <p class="self-start w-[200px] bg-[#f5f7fb] p-3.5 rounded-lg">
-                {ms.message}
-              </p>
-            {/if}
-          </div>
-        {/each}
-      {:else}
-        
-       <ImageNotFound />
-      {/if}
+      <div class="flex-1 overflow-auto px-4">
+        {#if messages.length > 0 && openVal}
+          {#each messages as ms}
+            <div class="flex flex-col justify-center mb-4 p-4">
+              {#if ms.created_by == userId}
+                <p
+                  class="self-end max-w-[30%] p-3.5 px-2 bg-[#A259FF] text-white rounded-lg"
+                >
+                  {ms.message}
+                </p>
+              {:else}
+                <div class="flex flex-row">
+                  <img
+                    src="../images/profile.jpg"
+                    alt="Image Not Found"
+                    class="mr-2 h-[100px] w-[60px] rounded-[20px] py-3"
+                  />
+                  <p
+                    class="self-start mt-4 max-w-[30%] bg-[#f5f7fb] p-3.5 rounded-lg"
+                  >
+                    {ms.message}
+                  </p>
+                </div>
+              {/if}
+            </div>
+          {/each}
+        {:else}
+          <ImageNotFound />
+        {/if}
       </div>
-      <div class="p-2 bg-white flex flex-row flex-shrink-0">
-        <input type="text" placeholder = "Type Message" class='{val} ml-2 bg-[#f5f7fb] rounded-[30px] px-[30px] w-[90%] sendInput' bind:value={inputMessage} />
+      <div class="p-2 pb-3 bg-white flex flex-row flex-shrink-0">
+        <input
+          type="text"
+          placeholder="Type Message"
+          class="{val} ml-2 bg-[#f5f7fb] rounded-[30px] px-[30px] w-[100%] sendInput"
+          bind:value={inputMessage}
+        />
         <button on:click={sendMessage}>
-        <img
-        width="40px"
-        src="../images/send.png"
-        alt="Image Not Found"
-        class="{val} ml-2 rounded-[20px] py-3"
-        
-      />
-       </button>
+          <img
+            width="40px"
+            src="../images/send.png"
+            alt="Image Not Found"
+            class="{val} ml-2 rounded-[20px] py-3 pr-2"
+          />
+        </button>
       </div>
     </div>
   </div>
@@ -144,6 +184,6 @@
     background-color: #f5f7fb;
   }
   .sendInput:focus {
-    outline:none;
+    outline: none;
   }
 </style>

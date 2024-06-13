@@ -22,10 +22,7 @@ export const load : PageServerLoad = async ({fetch}) : Promise<object> => {
     let data = await response.json();
     let username : string = data.message.username;
 
-    let chatList = await sendData('/getUserChats',{username});
-    let chatData : any = chatList.json; 
-    return {username ,chatData}
-
+    return {username}
         
     } catch (error) {
         console.log(error)
