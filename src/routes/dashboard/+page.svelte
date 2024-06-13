@@ -1,10 +1,10 @@
 <script lang="ts">
   import Search from "$lib/components/Search.svelte";
   import Button from "$lib/components/Button.svelte";
+  import ImageNotFound from "$lib/components/ImageNotFound.svelte";
   import { fetchApi } from "$lib/utils/fetchApi";
   import { ioClient } from "$lib/socket/socket.js";
   import { onMount } from "svelte";
-  import { io } from "socket.io-client";
 
   let chatUserList: object[];
   let chatMessages: object[] = [];
@@ -62,7 +62,7 @@
 </script>
 
 <div class="container-fluid">
-  <div class="row justify-content-center">
+  <div class="row justify-content-center flex-wrap">
     <div class="col-12 col-md-6 p-2">
       <Search />
     </div>
@@ -71,9 +71,9 @@
     </div>
   </div>
 
-  <div class="flex flex-row">
+  <div class="flex flex-row h-[calc(100vh-250px)]">
     <div
-      class="flex flex-col mt-4 w-[28%] ml-[60px] px-4 bg-white rounded-[20px]"
+      class="flex flex-col flex-wrap mt-4 w-[28%] ml-[60px] px-4 bg-white rounded-[20px] overflow-auto"
     >
       {#if chatList.length > 0}
         {#each chatList as ch}
@@ -96,29 +96,43 @@
     </div>
 
     <div
-      class="flex flex-col mt-4 w-[80%] mr-4 ml-8 bg-white rounded-[20px] overflow-auto"
+      class="flex flex-col mt-4 w-[80%] mr-4 ml-8 bg-white rounded-[20px] overflow-hidden relative"
     >
+    <div class="flex-1 overflow-auto p-4">
+
       {#if messages.length > 0}
         {#each messages as ms}
           <div class="flex flex-col justify-center mb-4 p-4">
             {#if ms.created_by == userId}
               <p
-                class="self-end pl-2 w-[200px] py-3.5 pr-4 bg-[#A259FF] text-white rounded-lg"
+                class="self-end w-[200px] p-3.5 bg-[#A259FF] text-white rounded-lg"
               >
                 {ms.message}
               </p>
             {:else}
-              <p class="self-start bg-gray-100 p-3.5 rounded-lg">
+              <p class="self-start w-[200px] bg-[#f5f7fb] p-3.5 rounded-lg">
                 {ms.message}
               </p>
             {/if}
           </div>
         {/each}
       {:else}
-        <h1>No Data Found Messages!</h1>
+        
+       <ImageNotFound />
       {/if}
-      <input type="text" class={val} bind:value={inputMessage} />
-      <button class={val} on:click={sendMessage}>Send</button>
+      </div>
+      <div class="p-2 bg-white flex flex-row flex-shrink-0">
+        <input type="text" placeholder = "Type Message" class='{val} ml-2 bg-[#f5f7fb] rounded-[30px] px-[30px] w-[90%] sendInput' bind:value={inputMessage} />
+        <button on:click={sendMessage}>
+        <img
+        width="40px"
+        src="../images/send.png"
+        alt="Image Not Found"
+        class="{val} ml-2 rounded-[20px] py-3"
+        
+      />
+       </button>
+      </div>
     </div>
   </div>
 </div>
@@ -128,5 +142,8 @@
     margin: 0;
     padding: 0;
     background-color: #f5f7fb;
+  }
+  .sendInput:focus {
+    outline:none;
   }
 </style>
