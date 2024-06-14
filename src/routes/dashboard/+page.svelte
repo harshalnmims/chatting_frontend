@@ -14,7 +14,8 @@
   let count: number = 0;
   let isOpen: string = "show";
   let openFlag: boolean = false;
-  let newMessage: string;
+  let msgFlag: string ='del';
+  let newMessage : string;
 
   $: messages = chatMessages;
   $: val = buttonFlag;
@@ -22,7 +23,8 @@
   $: chatCount = count;
   $: openUser = isOpen;
   $: openVal = openFlag;
-  $: latestMessage = newMessage;
+  $: msgVal = msgFlag;
+  $:latestMessage = newMessage
 
   export let data;
   console.log("user >>>>>>>>>>> ", JSON.stringify(data.chatData));
@@ -53,11 +55,23 @@
     chatMessages = updateChat;
   });
 
-  ioClient.on("private message", ({ senderPhoneNumber, inputMessage }) => {
-    console.log("user messages ", senderPhoneNumber, inputMessage);
+  ioClient.on("private message", ({ senderPhoneNumber, inputMessage ,messageLid }) => {
+    console.log("user messages ", senderPhoneNumber, inputMessage, messageLid);
     chatMessages = chatMessages.concat({ message: inputMessage });
     count = inputMessage.length;
+
+    if(openVal){
+      ioClient.emit("updateMsgStatus",{messageLid : messageLid , status : 'rd'})
+    }else{
+      ioClient.emit("updateMsgStatus",{messageLid : messageLid , status : 'dv'})
+    }
+
+    ioClient.on("updatedMsgStatus",async ({messageLid,status}) => {
+     msgFlag = 'read'
+     console.log('msg val ',msgVal,messageLid,status)
+  })
   });
+
 
   function selectUser(contactId: number) {
     console.log(contactId);
@@ -148,7 +162,7 @@
                     class="self-start mt-4 max-w-[30%] bg-[#f5f7fb] p-3.5 rounded-lg"
                   >
                     {ms.message}
-                  </p>
+                  </p><p>{msgVal}</p>
                 </div>
               {/if}
             </div>
