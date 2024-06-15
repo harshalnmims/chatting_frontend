@@ -14,8 +14,9 @@
   let count: number = 0;
   let isOpen: string = "show";
   let openFlag: boolean = false;
-  let msgFlag: string ='del';
-  let newMessage : string;
+  let msgFlag: string = "del";
+  let newMessage: string;
+  let element: any = [];
 
   $: messages = chatMessages;
   $: val = buttonFlag;
@@ -24,7 +25,7 @@
   $: openUser = isOpen;
   $: openVal = openFlag;
   $: msgVal = msgFlag;
-  $:latestMessage = newMessage
+  $: latestMessage = newMessage;
 
   export let data;
   console.log("user >>>>>>>>>>> ", JSON.stringify(data.chatData));
@@ -55,23 +56,36 @@
     chatMessages = updateChat;
   });
 
-  ioClient.on("private message", ({ senderPhoneNumber, inputMessage ,messageLid }) => {
-    console.log("user messages ", senderPhoneNumber, inputMessage, messageLid);
-    chatMessages = chatMessages.concat({ message: inputMessage });
-    count = inputMessage.length;
+  ioClient.on(
+    "private message",
+    ({ senderPhoneNumber, inputMessage, messageLid }) => {
+      console.log(
+        "user messages ",
+        senderPhoneNumber,
+        inputMessage,
+        messageLid
+      );
+      chatMessages = chatMessages.concat({ message: inputMessage });
+      count = inputMessage.length;
 
-    if(openVal){
-      ioClient.emit("updateMsgStatus",{messageLid : messageLid , status : 'rd'})
-    }else{
-      ioClient.emit("updateMsgStatus",{messageLid : messageLid , status : 'dv'})
+      if (openVal) {
+        ioClient.emit("updateMsgStatus", {
+          messageLid: messageLid,
+          status: "rd",
+        });
+      } else {
+        ioClient.emit("updateMsgStatus", {
+          messageLid: messageLid,
+          status: "dv",
+        });
+      }
+
+      // ioClient.on("updatedMsgStatus", async ({ messageLid, status }) => {
+      //   msgFlag = "read";
+      //   console.log("msg val ", msgVal, messageLid, status);
+      // });
     }
-
-    ioClient.on("updatedMsgStatus",async ({messageLid,status}) => {
-     msgFlag = 'read'
-     console.log('msg val ',msgVal,messageLid,status)
-  })
-  });
-
+  );
 
   function selectUser(contactId: number) {
     console.log(contactId);
@@ -92,6 +106,11 @@
     inputMessage = "";
     newMessage = inputMessage;
   }
+
+  // function viewMessage(target) {
+  //   let id = target.getAttribute("data-id");
+  //   console.log("view message called ", id);
+  // }
 </script>
 
 <div class="container-fluid">
@@ -110,7 +129,7 @@
     >
       {#if chatList?.length > 0}
         {#each chatList as ch}
-          <div class="flex flex-row items-center mb-4">
+          <div class="flex flex-row items-center mb-4" data-id={ch.contact}>
             <img
               width="60px"
               src="../images/profile.jpg"
@@ -118,10 +137,11 @@
               class="mr-2 rounded-[20px] py-3"
             />
             <button
+              id="particularUser"
               class="w-full text-left mb-4 mt-3 flex flex-col"
               on:click={() => selectUser(ch.id)}
             >
-              <p>{ch.firstname}</p>
+              <p>{ch.firstname} {ch.lastname}</p>
               <p class="font-semibold ... mt-2">{newMessage}</p>
             </button>
             <p
@@ -162,7 +182,7 @@
                     class="self-start mt-4 max-w-[30%] bg-[#f5f7fb] p-3.5 rounded-lg"
                   >
                     {ms.message}
-                  </p><p>{msgVal}</p>
+                  </p>
                 </div>
               {/if}
             </div>
