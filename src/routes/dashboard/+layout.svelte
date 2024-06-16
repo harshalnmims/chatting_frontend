@@ -11,7 +11,7 @@
     >
       {#each headerModules as mod}
         <li class="px-8 text-[18px]">
-          <a href="#" class="hover:text-green-500 hover:underline-[green]"
+          <a href="/dashboard" class="hover:text-green-500 hover:underline-[green]"
             >{mod.module_name}</a
           >
         </li>

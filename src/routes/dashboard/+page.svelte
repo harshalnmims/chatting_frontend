@@ -9,7 +9,7 @@
   let chatUserList: object[];
   let chatMessages: object[] = [];
   let buttonFlag: string = "d-none";
-  let inputMessage: string;
+  let inputMessage: string | undefined | null;
   let contactLid: number;
   let count: number = 0;
   let isOpen: string = "show";
@@ -17,7 +17,10 @@
   let msgFlag: string = "del";
   let newMessage: string;
   let element: any = [];
+  let particularContact : number;
+  let inputVal : boolean = true;
 
+  $: inputText = inputMessage;
   $: messages = chatMessages;
   $: val = buttonFlag;
   $: contact = contactLid;
@@ -26,12 +29,27 @@
   $: openVal = openFlag;
   $: msgVal = msgFlag;
   $: latestMessage = newMessage;
+  $: privateContact = particularContact
+  $: chatList = chatUserList;
+  $: inputBool = inputVal
+
 
   export let data;
   console.log("user >>>>>>>>>>> ", JSON.stringify(data.chatData));
   let userId: string = data?.username;
 
-  $: chatList = chatUserList;
+  onMount(() => {
+    document.getElementById('userInput')?.addEventListener('input',(e) => {
+      let inputValue = e?.target?.value;
+      
+      if(inputValue.length > 0){
+        inputVal = false;
+      }else{
+        inputVal = true;
+      }
+
+    })
+  })
 
   console.log("username ", userId, JSON.stringify(chatList));
 
@@ -54,6 +72,12 @@
   ioClient.on("updatedChats", ({ updateChat }) => {
     console.log("user messages ", updateChat);
     chatMessages = updateChat;
+
+    ioClient.on("newUserChatList", ({ chatUsers }) => {
+        console.log("sended private message chats >>>>>>>>>>>>>> ", JSON.stringify(chatUsers));
+        chatUserList = chatUsers;
+      });
+
   });
 
   ioClient.on(
@@ -68,6 +92,7 @@
       chatMessages = chatMessages.concat({ message: inputMessage });
       count = inputMessage.length;
 
+      console.log('is chat box open ',openVal)
       if (openVal) {
         ioClient.emit("updateMsgStatus", {
           messageLid: messageLid,
@@ -80,14 +105,30 @@
         });
       }
 
+      ioClient.emit('sender Chats',{userId});  
+
+
       // ioClient.on("updatedMsgStatus", async ({ messageLid, status }) => {
       //   msgFlag = "read";
       //   console.log("msg val ", msgVal, messageLid, status);
       // });
+
+      ioClient.on("sender msg", ({ chatUserMsg }) => {
+        console.log("sender private message chats >>>>>>>>>>>>>> ", JSON.stringify(chatUserMsg));
+        chatUserList = chatUserMsg;
+      });
+      
     }
   );
 
-  function selectUser(contactId: number) {
+    //  ioClient.on("newUserChatList", ({ chatUsers }) => {
+    //     console.log("sended private message chats >>>>>>>>>>>>>> ", JSON.stringify(chatUsers));
+    //     chatUserList = chatUsers;
+    //   });
+
+  
+
+  function selectUser(contactId: number) : void{
     console.log(contactId);
     contactLid = contactId;
 
@@ -100,17 +141,16 @@
     openFlag = true;
   }
 
-  function sendMessage() {
+  function sendMessage() : void {
     console.log("send message called ", inputMessage, contact);
     ioClient.emit("private message", { inputMessage, contact, userId });
     inputMessage = "";
     newMessage = inputMessage;
   }
 
-  // function viewMessage(target) {
-  //   let id = target.getAttribute("data-id");
-  //   console.log("view message called ", id);
-  // }
+ 
+
+
 </script>
 
 <div class="container-fluid">
@@ -142,14 +182,28 @@
               on:click={() => selectUser(ch.id)}
             >
               <p>{ch.firstname} {ch.lastname}</p>
-              <p class="font-semibold ... mt-2">{newMessage}</p>
+
+              {#if userId == ch.latest_messages[0].created}
+              <p class="mt-2">{ch.latest_messages[0].message}</p>
+              {:else}
+      
+              {#if ch.latest_messages[0].status === 'dv' && !openVal }
+              <p class="font-semibold ... mt-2">{ch.latest_messages[0].message}</p>               
+              {:else}              
+              <p class="mt-2">{ch.latest_messages[0].message}</p>                
+              {/if}
+
+              {/if}
             </button>
+            
+            {#if ch.message_count > 0}
             <p
-              class="float-right bg-[#A259FF] text-white p-1.5 flex items-center justify-center {openUser}"
-              style="width: 30px; height: 30px; border-radius: 50%;"
-            >
-              {chatCount}
+              class="float-right bg-[#A259FF] text-white p-2.5 py-2.5 relative mb-[30px] flex items-center justify-center {openUser}"
+              style="width: 20px; height: 20px; border-radius: 50%;"
+            >  
+            {ch.message_count}
             </p>
+            {/if}
           </div>
           <hr class="w-full my-2 border-t border-gray-300" />
         {/each}
@@ -164,13 +218,14 @@
       <div class="flex-1 overflow-auto px-4">
         {#if messages.length > 0 && openVal}
           {#each messages as ms}
-            <div class="flex flex-col justify-center mb-4 p-4">
-              {#if ms.created_by == userId}
+            <div class="flex flex-col justify-center mb-4 p-4" >
+              {#if ms.created_by === userId}
                 <p
                   class="self-end max-w-[30%] p-3.5 px-2 bg-[#A259FF] text-white rounded-lg"
-                >
+                  >
                   {ms.message}
                 </p>
+
               {:else}
                 <div class="flex flex-row">
                   <img
@@ -195,10 +250,12 @@
         <input
           type="text"
           placeholder="Type Message"
+          id="userInput"
           class="{val} ml-2 bg-[#f5f7fb] rounded-[30px] px-[30px] w-[100%] sendInput"
           bind:value={inputMessage}
         />
-        <button on:click={sendMessage}>
+
+        <button class={inputBool ? 'opacity-50' : 'opacity-100'} disabled = {inputBool} on:click={sendMessage}>
           <img
             width="40px"
             src="../images/send.png"
@@ -206,6 +263,7 @@
             class="{val} ml-2 rounded-[20px] py-3 pr-2"
           />
         </button>
+        
       </div>
     </div>
   </div>
